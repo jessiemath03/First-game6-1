@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jessie Math - 三年級除法大冒險</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-yellow: #FFD700;
+            --secondary-blue: #4A90E2;
+            --accent-pink: #FF6B6B;
+            --bg-color: #f0faff;
+            --card-bg: #ffffff;
+            --text-dark: #333;
+            --success-green: #2ecc71;
+        }
+
+        * { box-sizing: border-box; font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; }
+        body { margin: 0; background-color: var(--bg-color); overflow-x: hidden; color: var(--text-dark); }
+
+        /* --- Header & Brand --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .hero-brand { display: flex; align-items: center; }
+        .logo-circle {
+            width: 50px; height: 50px;
+            background: var(--primary-yellow);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            margin-right: 10px;
+        }
+        .logo-circle img { width: 80%; height: auto; }
+        .brand-name { font-weight: bold; font-size: 1.2rem; }
+
+        .nav-links { display: flex; gap: 8px; }
+        .nav-btn {
+            text-decoration: none;
+            color: #555;
+            padding: 8px 12px;
+            border-radius: 20px;
+            background: #eee;
+            font-size: 0.85rem;
+            display: flex; align-items: center; gap: 5px;
+            transition: 0.3s;
+        }
+        .nav-btn:hover { background: #ddd; }
+
+        /* --- UI Screens --- */
+        .screen {
+            display: none;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 25px;
+            text-align: center;
+            background: var(--card-bg);
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            position: relative;
+        }
+        .screen.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Components --- */
+        .btn-main {
+            background: var(--secondary-blue);
+            color: white; border: none;
+            padding: 15px 45px; border-radius: 50px;
+            font-size: 1.2rem; cursor: pointer;
+            margin: 15px 0; transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+        }
+        .btn-main:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4); }
+
+        input[type="text"] {
+            padding: 15px; width: 90%; border: 2px solid #eee;
+            border-radius: 15px; font-size: 1.1rem; margin-bottom: 20px; outline: none;
+        }
+        input[type="text"]:focus { border-color: var(--secondary-blue); }
+
+        .level-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .level-card {
+            background: #fdfdfd; padding: 20px; border-radius: 18px;
+            cursor: pointer; border: 3px solid #f0f0f0;
+            transition: 0.3s;
+        }
+        .level-card:hover { border-color: var(--primary-yellow); transform: scale(1.02); background: #fffdf0; }
+        .level-card h4 { margin: 0 0 8px 0; color: var(--secondary-blue); }
+        .level-card p { margin: 0; font-size: 0.9rem; color: #777; }
+
+        /* --- 排行榜樣式 --- */
+        .lobby-leaderboard {
+            margin-top: 30px;
+            background: #fff9e6;
+            border-radius: 15px;
+            padding: 15px;
+            border: 2px solid var(--primary-yellow);
+        }
+        .board-item {
+            display: flex; justify-content: space-between;
+            padding: 8px 15px; border-bottom: 1px solid #ffeeba;
+        }
+        .board-item:last-child { border-bottom: none; }
+        .rank-num { font-weight: bold; color: #d4a017; margin-right: 10px; }
+
+        /* --- Game Play --- */
+        #game-info {
+            display: flex; justify-content: space-around; align-items: center;
+            margin-bottom: 20px; font-size: 1.2rem; font-weight: bold;
+        }
+        .timer { color: var(--accent-pink); background: #fff0f0; padding: 5px 15px; border-radius: 10px; }
+        .score-box { color: var(--secondary-blue); }
+        
+        .combo-badge {
+            position: absolute; right: 20px; top: 100px;
+            color: #FF8C00; font-size: 1.8rem; font-weight: 900;
+            text-shadow: 2px 2px 0px #fff; display: none;
+            animation: bounce 0.5s infinite alternate;
+        }
+        @keyframes bounce { from { transform: translateY(0) scale(1); } to { transform: translateY(-10px) scale(1.1); } }
+
+        .question-card {
+            background: #fffef0; padding: 40px 20px; border-radius: 20px;
+            border: 3px dashed var(--primary-yellow); margin-bottom: 25px;
+            font-size: 1.8rem; line-height: 1.4;
+            min-height: 150px; display: flex; align-items: center; justify-content: center;
+        }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .opt-btn {
+            background: white; border: 2px solid #eee;
+            padding: 18px; border-radius: 15px; font-size: 1.3rem; 
+            cursor: pointer; transition: 0.2s; box-shadow: 0 3px 0 #eee;
+        }
+        .opt-btn:hover { background: #f0f7ff; border-color: var(--secondary-blue); }
+        .opt-btn:active { transform: translateY(3px); box-shadow: none; }
+
+        /* --- Feedback Overlay --- */
+        .feedback-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 80%; padding: 20px; border-radius: 15px;
+            font-size: 1.5rem; font-weight: bold; z-index: 100;
+            display: none; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+        @keyframes popIn { 
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        .feedback-correct { background: rgba(46, 204, 113, 0.95); color: white; border: 4px solid #fff; }
+        .feedback-wrong { background: rgba(231, 76, 60, 0.95); color: white; border: 4px solid #fff; }
+
+        /* --- Overlays --- */
+        #pause-mask {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 2000; color: white;
+            flex-direction: column; justify-content: center; align-items: center;
+        }
+
+        /* RWD */
+        @media (max-width: 480px) {
+            .screen { margin: 10px; padding: 15px; }
+            .level-grid { grid-template-columns: 1fr; }
+            .question-card { font-size: 1.4rem; padding: 30px 15px; }
+            .brand-name { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="hero-brand">
+            <div class="logo-circle">
+                <img src="JESSIEMATH-Q.png" alt="Jessie Math" onerror="this.src='https://via.placeholder.com/40/FFD700/000000?text=J'">
+            </div>
+            <span class="brand-name">Jessie Math</span>
+        </div>
+        <div class="nav-links">
+            <a href="https://jessiemath0703-chu.github.io/website2/" class="nav-btn"><i class="fas fa-home"></i> 首頁</a>
+            <a href="https://jessiemath0703-chu.github.io/Game-Lobby/" class="nav-btn"><i class="fas fa-gamepad"></i> 遊戲大廳</a>
+            <a href="https://jessiemath0703-chu.github.io/Game-Lobby/#g3-u6" class="nav-btn" style="background: var(--primary-yellow); color: #333;">三年級除法</a>
+        </div>
+    </header>
+
+    <div id="screen-login" class="screen active">
+        <h2 style="color: var(--secondary-blue);"><i class="fas fa-rocket"></i> 除法冒險王</h2>
+        <p>歡迎來到數學冒險世界！請輸入名字：</p>
+        <input type="text" id="player-name" placeholder="例如：小明" maxlength="10">
+        <div style="text-align: left; background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 5px solid var(--primary-yellow);">
+            <p style="margin-top:0;"><strong>📜 冒險規則：</strong></p>
+            <ul style="padding-left: 20px; line-height: 1.6;">
+                <li>限時 <strong>60 秒</strong> 隨機出題。</li>
+                <li>答對：<strong>+5 秒</strong> & 獲得分數。</li>
+                <li>答錯：<strong>-5 秒</strong> (要小心哦！)。</li>
+                <li><strong>Combo：</strong>連續答對分數會越來越高！</li>
+            </ul>
+        </div>
+        <button class="btn-main" onclick="goToLobby()">進入遊戲大廳</button>
+    </div>
+
+    <div id="screen-lobby" class="screen">
+        <h3 id="welcome-msg">探險家，請選擇關卡</h3>
+        <div style="margin-bottom: 20px;">
+            <label><strong>挑戰速度：</strong></label>
+            <select id="difficulty-select" style="padding: 8px 15px; border-radius: 10px; border: 2px solid #ddd;">
+                <option value="1">普通 (1.0x)</option>
+                <option value="1.5">進階 (1.5x 分數)</option>
+                <option value="2">大師 (2.0x 分數)</option>
+            </select>
+        </div>
+        <div class="level-grid">
+            <div class="level-card" onclick="startGame(1)">
+                <h4>Lv.1 魔法甜點店</h4>
+                <p>🍭 練習「平均分配」</p>
+            </div>
+            <div class="level-card" onclick="startGame(2)">
+                <h4>Lv.2 森林搬家隊</h4>
+                <p>📦 練習「分裝包含」</p>
+            </div>
+            <div class="level-card" onclick="startGame(3)">
+                <h4>Lv.3 寶藏守護者</h4>
+                <p>💎 挑戰「餘數判斷」</p>
+            </div>
+        </div>
+        <div class="lobby-leaderboard">
+            <h4>🏆 全球英雄榜 (Top 5)</h4>
+            <div id="lobby-board-list">
+                <p style="color:#999;">尚無紀錄，快去挑戰吧！</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-game" class="screen">
+        <div id="feedback-correct" class="feedback-overlay feedback-correct">✨ 太棒了！正確！ ✨</div>
+        <div id="feedback-wrong" class="feedback-overlay feedback-wrong">❌ 答錯了！<br>正確答案是 <span id="correct-ans-show"></span></div>
+
+        <div id="combo-display" class="combo-badge">Combo x<span id="combo-val">0</span></div>
+        <div id="game-info">
+            <span class="score-box">得分: <span id="score-val">0</span></span>
+            <span class="timer"><i class="fas fa-clock"></i> <span id="timer-val">60</span>s</span>
+        </div>
+        <div id="question-container">
+            <div class="question-card" id="q-text">準備中...</div>
+            <div class="options-grid" id="options-box"></div>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 10px; margin-top: 10px;">
+            <button onclick="pauseGame()" class="nav-btn"><i class="fas fa-pause"></i> 暫停</button>
+            <button onclick="restartGame()" class="nav-btn"><i class="fas fa-redo"></i> 重新</button>
+            <button onclick="quitGame()" class="nav-btn"><i class="fas fa-sign-out-alt"></i> 回主選單</button>
+        </div>
+    </div>
+
+    <div id="screen-result" class="screen">
+        <h2 id="result-title">冒險結束！</h2>
+        <div id="star-rating" style="font-size: 3.5rem; color: var(--primary-yellow); margin: 10px 0; text-shadow: 2px 2px 5px rgba(0,0,0,0.1);"></div>
+        <p style="font-size: 1.2rem;">冒險者：<span id="res-name" style="font-weight:bold;"></span></p>
+        <div style="background: #f0f7ff; padding: 20px; border-radius: 20px; margin: 20px 0;">
+            <span style="font-size: 1.1rem;">最終得分</span><br>
+            <span id="res-score" style="font-size: 3rem; font-weight: bold; color: var(--secondary-blue);">0</span>
+        </div>
+        <button class="btn-main" onclick="showScreen('screen-lobby'); renderBoard();">再玩一次</button>
+    </div>
+
+    <div id="pause-mask">
+        <h1 style="font-size: 3rem; margin-bottom: 20px;">休息一下...</h1>
+        <button class="btn-main" onclick="resumeGame()" style="background: var(--primary-yellow); color: #333;">繼續冒險</button>
+    </div>
+
+    <script>
+        let playerName = "";
+        let currentLevel = 1;
+        let score = 0;
+        let timer = 60;
+        let combo = 0;
+        let gameActive = false;
+        let timerInterval;
+        let currentAnswer = 0;
+        let difficulty = 1;
+        let canClick = true; // 防止連續點擊
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if(id === 'screen-lobby') renderBoard();
+        }
+
+        function goToLobby() {
+            const inputName = document.getElementById('player-name').value.trim();
+            if(!inputName) { alert("請先輸入名字喔！"); return; }
+            playerName = inputName;
+            document.getElementById('welcome-msg').innerText = `你好，${playerName}！選擇挑戰關卡：`;
+            showScreen('screen-lobby');
+        }
+
+        function startGame(lv) {
+            currentLevel = lv;
+            score = 0;
+            timer = 60;
+            combo = 0;
+            difficulty = parseFloat(document.getElementById('difficulty-select').value);
+            gameActive = true;
+            canClick = true;
+            document.getElementById('combo-display').style.display = 'none';
+            updateUI();
+            showScreen('screen-game');
+            nextQuestion();
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (gameActive) {
+                    timer--;
+                    document.getElementById('timer-val').innerText = timer;
+                    if (timer <= 0) endGame();
+                }
+            }, 1000);
+        }
+
+        function nextQuestion() {
+            const qText = document.getElementById('q-text');
+            const optBox = document.getElementById('options-box');
+            optBox.innerHTML = "";
+            canClick = true;
+
+            let a, b, q, r = 0;
+            let questionStr = "";
+
+            if (currentLevel === 1) {
+                b = Math.floor(Math.random() * 8) + 2; 
+                q = Math.floor(Math.random() * 9) + 1;
+                a = b * q;
+                questionStr = `有 ${a} 個蛋糕，平分給 ${b} 個小朋友，每人分到幾個？`;
+                currentAnswer = q;
+            } else if (currentLevel === 2) {
+                let type = Math.random();
+                if (type < 0.15) {
+                    b = Math.floor(Math.random() * 10) + 1;
+                    questionStr = `籃子裡有 0 個蘋果，每 ${b} 個裝成一袋，可以裝成幾袋？`;
+                    currentAnswer = 0;
+                } else if (type < 0.3) {
+                    a = Math.floor(Math.random() * 12) + 1;
+                    questionStr = `有 ${a} 顆糖果，每 1 顆裝成一包，共可以裝幾包？`;
+                    currentAnswer = a;
+                } else {
+                    b = Math.floor(Math.random() * 7) + 3;
+                    q = Math.floor(Math.random() * 9) + 2;
+                    a = b * q;
+                    questionStr = `有 ${a} 顆草莓，每 ${b} 顆裝一盒，總共可以裝幾盒？`;
+                    currentAnswer = q;
+                }
+            } else {
+                b = Math.floor(Math.random() * 6) + 3;
+                q = Math.floor(Math.random() * 7) + 2;
+                r = Math.floor(Math.random() * (b - 1)) + 1;
+                a = b * q + r;
+                questionStr = `計算 ${a} ÷ ${b}，<br>最後的「餘數」是多少？`;
+                currentAnswer = r;
+            }
+
+            qText.innerHTML = questionStr;
+            let options = generateOptions(currentAnswer);
+            options.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt);
+                optBox.appendChild(btn);
+            });
+        }
+
+        function generateOptions(correct) {
+            let opts = [correct];
+            while (opts.length < 4) {
+                let wrong = correct + Math.floor(Math.random() * 6) - 3;
+                if (wrong < 0 || opts.includes(wrong)) wrong = Math.floor(Math.random() * 20);
+                if (!opts.includes(wrong)) opts.push(wrong);
+            }
+            return opts.sort(() => Math.random() - 0.5);
+        }
+
+        function checkAnswer(picked) {
+            if (!gameActive || !canClick) return;
+            canClick = false;
+
+            const correctEl = document.getElementById('feedback-correct');
+            const wrongEl = document.getElementById('feedback-wrong');
+            const correctAnsShow = document.getElementById('correct-ans-show');
+
+            if (picked === currentAnswer) {
+                combo++;
+                let points = 10 * difficulty * (combo >= 3 ? 1.5 : 1);
+                score += Math.round(points);
+                timer += 5;
+                if (combo >= 3) {
+                    document.getElementById('combo-display').style.display = 'block';
+                    document.getElementById('combo-val').innerText = combo;
+                }
+                // 答對回饋
+                correctEl.style.display = 'block';
+                setTimeout(() => { correctEl.style.display = 'none'; nextQuestion(); }, 1000);
+            } else {
+                combo = 0;
+                timer -= 5;
+                document.getElementById('combo-display').style.display = 'none';
+                // 答錯回饋並給答案
+                correctAnsShow.innerText = currentAnswer;
+                wrongEl.style.display = 'block';
+                setTimeout(() => { wrongEl.style.display = 'none'; nextQuestion(); }, 1500);
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('score-val').innerText = score;
+            document.getElementById('timer-val').innerText = timer;
+        }
+
+        function pauseGame() { gameActive = false; document.getElementById('pause-mask').style.display = 'flex'; }
+        function resumeGame() { gameActive = true; document.getElementById('pause-mask').style.display = 'none'; }
+        function restartGame() { if(confirm("確定要重玩嗎？分數會歸零喔！")) startGame(currentLevel); }
+        function quitGame() { clearInterval(timerInterval); gameActive = false; showScreen('screen-lobby'); }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            showScreen('screen-result');
+            document.getElementById('res-name').innerText = playerName;
+            document.getElementById('res-score').innerText = score;
+            let stars = "★☆☆";
+            if (score > 300) stars = "★★★";
+            else if (score > 150) stars = "★★☆";
+            document.getElementById('star-rating').innerText = stars;
+            saveLeaderboard(playerName, score);
+        }
+
+        function saveLeaderboard(name, score) {
+            let board = JSON.parse(localStorage.getItem('jessie_math_v3') || "[]");
+            board.push({name, score, date: new Date().toLocaleDateString()});
+            board.sort((a,b) => b.score - a.score);
+            localStorage.setItem('jessie_math_v3', JSON.stringify(board.slice(0, 5)));
+        }
+
+        function renderBoard() {
+            let board = JSON.parse(localStorage.getItem('jessie_math_v3') || "[]");
+            let listEl = document.getElementById('lobby-board-list');
+            if(board.length === 0) {
+                listEl.innerHTML = `<p style="color:#999; margin:10px;">尚無紀錄，成為第一個冒險王吧！</p>`;
+                return;
+            }
+            let html = board.map((item, idx) => `
+                <div class="board-item">
+                    <span><span class="rank-num">#${idx+1}</span> ${item.name}</span>
+                    <span style="font-weight:bold; color:var(--secondary-blue);">${item.score} 分</span>
+                </div>
+            `).join('');
+            listEl.innerHTML = html;
+        }
+
+        window.onload = renderBoard;
+    </script>
+</body>
+</html>
